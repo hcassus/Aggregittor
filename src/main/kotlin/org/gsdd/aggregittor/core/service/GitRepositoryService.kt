@@ -9,4 +9,13 @@ class GitRepositoryService(val repositoryGateway: VcsRepositoryGateway) :
     override fun getVcsRepositories(): List<VcsRepository> {
         return repositoryGateway.getVcsRepositories()
     }
+
+    override fun switchToBranch(branchName: String) {
+        repositoryGateway.switchRepositoriesToBranch(branchName)
+
+    }
+
+    override fun hardResetCurrentBranches() {
+        repositoryGateway.hardResetCurrentBranches()
+    }
 }

@@ -6,4 +6,7 @@ interface VcsRepositoryGateway {
 
     fun getVcsRepositories() : List<VcsRepository>
 
+    fun switchRepositoriesToBranch(branchName:String)
+
+    fun hardResetCurrentBranches()
 }

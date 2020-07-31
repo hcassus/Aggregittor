@@ -1,10 +1,14 @@
 package org.gsdd.aggregittor.server
 
 import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.api.ResetCommand
+import org.eclipse.jgit.api.errors.CheckoutConflictException
 import org.eclipse.jgit.lib.Repository
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder
 import org.gsdd.aggregittor.core.domain.VcsRepository
+import org.gsdd.aggregittor.core.exception.RepositoryConflictException
 import org.gsdd.aggregittor.core.gateway.VcsRepositoryGateway
+
 import java.io.File
 
 class JGitRepositoryGateway : VcsRepositoryGateway {
@@ -13,6 +17,16 @@ class JGitRepositoryGateway : VcsRepositoryGateway {
         val gitDirs = getGitDirs()
         val repos = getGitRepos(gitDirs)
         return repos.map(::toDomain)
+    }
+
+    override fun switchRepositoriesToBranch(branchName: String) {
+        val repos = getGitRepos(getGitDirs())
+        repos.forEach { r -> switchToBranch(r, branchName) }
+    }
+
+    override fun hardResetCurrentBranches() {
+        val repos = getGitRepos(getGitDirs())
+        repos.forEach { r -> hardResetBranch(r) }
     }
 
     private fun getGitDirs() : List<File> {
@@ -52,6 +66,23 @@ class JGitRepositoryGateway : VcsRepositoryGateway {
         val git = Git(repo)
         val status = git.status().call()
         return status.isClean && !status.hasUncommittedChanges()
+    }
+
+    private fun switchToBranch(repo: Repository, branchName: String) {
+        val git = Git(repo)
+        val result = try {
+            git.checkout().setName(branchName).call()
+        } catch (e: CheckoutConflictException){
+            throw RepositoryConflictException("Unable to switch repository ${resolveRepoName(repo.identifier)} to " +
+                "branch $branchName. Work tree clean: ${isCleanTree(repo)}")
+        }
+        result.name
+    }
+
+    private fun hardResetBranch(repo: Repository) {
+        val git = Git(repo)
+        git.add().addFilepattern(".").call()
+        git.reset().setMode(ResetCommand.ResetType.HARD).call()
     }
 
 }
