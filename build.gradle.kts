@@ -17,6 +17,8 @@ dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.eclipse.jgit:org.eclipse.jgit:5.8.1.202007141445-r")
+
 }
 
 tasks {
